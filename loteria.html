@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loteria Napawikami</title>
+    <style>
+        /* Estilos Adaptables (Responsivos) */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #2c3e50; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            color: white; 
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+        }
+
+        h1 { 
+            font-size: 1.8rem; 
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tablero {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columnas siempre */
+            gap: 8px;
+            width: 100%;
+            max-width: 450px; /* Tamaño ideal en móvil y compu */
+            padding: 12px;
+            background-color: #ecf0f1;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .carta {
+            aspect-ratio: 2 / 3; /* Mantiene forma de carta de lotería */
+            width: 100%;
+            background-color: #bdc3c7;
+            border: 2px solid #34495e;
+            background-size: cover;
+            background-position: center;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .carta:active { transform: scale(0.95); }
+
+        /* El marcador (frijolito / X) */
+        .carta.marcada::after {
+            content: "❌";
+            font-size: 2rem;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        #btn-loteria {
+            margin-top: 25px;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: none; /* Oculto hasta ganar */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #btn-loteria.visible { display: block; }
+
+        /* Ajustes para pantallas muy pequeñas */
+        @media (max-width: 360px) {
+            h1 { font-size: 1.4rem; }
+            .tablero { gap: 5px; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Loteria Napawikami</h1>
+    
+    <div id="tablero" class="tablero">
+        </div>
+
+    <button id="btn-loteria" onclick="cantarLoteria()">¡LOTERÍA!</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const misCartas = [
+            "1.JPG", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg",
+            "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg",
+            "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "23.jpg", "24.jpg",
+            "25.jpg", "26.jpg", "27.jpg", "28.jpg", "29.jpg", "30.jpg"
+        ];
+
+        const contenedor = document.getElementById('tablero');
+        const rutaCarpeta = "imagenes/"; 
+
+        // 1. Revolver y seleccionar 16 cartas únicas para este jugador
+        const barajada = [...misCartas].sort(() => Math.random() - 0.5);
+        const seleccion = barajada.slice(0, 16);
+
+        // 2. Crear las cartas en el HTML
+        seleccion.forEach(nombreArchivo => {
+            const div = document.createElement('div');
+            div.className = 'carta';
+            div.style.backgroundImage = `url('${rutaCarpeta}${nombreArchivo}')`;
+            
+            // Lógica de marcar carta
+            div.onclick = function() {
+                this.classList.toggle('marcada');
+                revisarSiGano();
+            };
+
+            contenedor.appendChild(div);
+        });
+
+        function revisarSiGano() {
+            const marcadas = document.querySelectorAll('.carta.marcada').length;
+            const boton = document.getElementById('btn-loteria');
+            
+            // Aparece el botón si marcas las 16 (puedes cambiarlo a 4 para probar)
+            if (marcadas >= 16) {
+                boton.classList.add('visible');
+            } else {
+                boton.classList.remove('visible');
+            }
+        }
+
+        function cantarLoteria() {
+            // Efecto de confeti
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            alert("¡LOTERÍA! ¡ERES EL GANADOR! 🥳");
+        }
+    </script>
+</body>
+</html>

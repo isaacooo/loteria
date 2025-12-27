@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Gritón - Lotería</title>
+    <style>
+        body { font-family: sans-serif; background-color: #d32f2f; display: flex; flex-direction: column; align-items: center; color: white; min-height: 100vh; margin: 0; padding-top: 20px; }
+        
+        .carta-actual {
+            width: 250px;
+            height: 380px;
+            background-color: white;
+            border: 10px solid white;
+            border-radius: 15px;
+            margin: 20px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .placeholder { color: #ccc; font-size: 1.2rem; text-align: center; padding: 20px; }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background-color: #ffeb3b;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            color: #d32f2f;
+            transition: transform 0.2s;
+        }
+
+        button:active { transform: scale(0.95); }
+        button:disabled { background-color: #999; color: #666; cursor: not-allowed; }
+
+        #historial { margin-top: 20px; font-size: 1rem; color: #ffcdd2; }
+    </style>
+</head>
+<body>
+
+    <h1>🎙️ El Gritón</h1>
+    
+    <div id="pantalla-carta" class="carta-actual">
+        <div class="placeholder">¡Dale al botón para empezar!</div>
+    </div>
+
+    <button id="btn-gritar" onclick="sacarCarta()">¡SIGUIENTE CARTA!</button>
+
+    <div id="historial">Cartas restantes: 30</div>
+
+    <script>
+        const misCartas = [
+            "1.JPG", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg",
+            "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg",
+            "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "23.jpg", "24.jpg",
+            "25.jpg", "26.jpg", "27.jpg", "28.jpg", "29.jpg", "30.jpg"
+        ];
+
+        let mazo = [...misCartas].sort(() => Math.random() - 0.5);
+        const rutaCarpeta = "imagenes/";
+        const pantalla = document.getElementById('pantalla-carta');
+        const historialTxt = document.getElementById('historial');
+        const btn = document.getElementById('btn-gritar');
+
+        function sacarCarta() {
+            if (mazo.length === 0) {
+                pantalla.style.backgroundImage = "none";
+                pantalla.innerHTML = "<div class='placeholder'>¡Se acabaron las cartas!</div>";
+                btn.disabled = true;
+                historialTxt.innerText = "Fin del juego";
+                return;
+            }
+
+            // Sacar la primera carta del mazo revuelto
+            const carta = mazo.shift();
+            
+            // Limpiar el texto placeholder si existe
+            pantalla.innerHTML = "";
+            
+            // Mostrar la imagen
+            pantalla.style.backgroundImage = `url('${rutaCarpeta}${carta}')`;
+            
+            // Actualizar contador
+            historialTxt.innerText = `Cartas restantes: ${mazo.length}`;
+            
+            console.log("Salió: " + carta);
+        }
+    </script>
+</body>
+</html>
