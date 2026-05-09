@@ -3,161 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loteria Napawikami</title>
+    <title>Lotería Digital 4x4</title>
     <style>
-        /* Estilos Adaptables (Responsivos) */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #2c3e50; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            color: white; 
+        /* --- DISEÑO (CSS) --- */
+        body {
+            background-color: #2c3e50;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             margin: 0;
-            padding: 10px;
-            min-height: 100vh;
+            padding: 20px;
         }
 
-        h1 { 
-            font-size: 1.8rem; 
-            margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+        h1 { margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
 
         .tablero {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 columnas siempre */
-            gap: 8px;
-            width: 100%;
-            max-width: 450px; /* Tamaño ideal en móvil y compu */
-            padding: 12px;
-            background-color: #ecf0f1;
+            grid-template-columns: repeat(4, 1fr); /* 4 columnas exactas */
+            gap: 12px;
+            background: #ecf0f1;
+            padding: 15px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            box-sizing: border-box;
+            border: 8px solid #c0392b;
+            box-shadow: 0px 10px 30px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 95%;
         }
 
         .carta {
-            aspect-ratio: 2 / 3; /* Mantiene forma de carta de lotería */
             width: 100%;
-            background-color: #bdc3c7;
-            border: 2px solid #34495e;
+            aspect-ratio: 2/3; /* Proporción de carta clásica */
+            background-color: #ddd;
             background-size: cover;
             background-position: center;
-            border-radius: 6px;
+            border: 2px solid #333;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.2s ease;
             position: relative;
-            transition: transform 0.1s;
         }
 
-        .carta:active { transform: scale(0.95); }
-
-        /* El marcador (frijolito / X) */
+        /* El "Frijolito" o marca */
         .carta.marcada::after {
-            content: "❌";
+            content: '🔴'; /* Puedes cambiarlo por un 🫘 o una X */
             font-size: 2rem;
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             background: rgba(255, 255, 255, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
+            border-radius: 50%;
+            padding: 5px;
         }
 
-        #btn-loteria {
+        .carta.marcada {
+            filter: brightness(0.7);
+            transform: scale(0.95);
+        }
+
+        .controles {
             margin-top: 25px;
-            padding: 15px 40px;
-            font-size: 1.3rem;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
             font-weight: bold;
-            background-color: #27ae60;
             color: white;
+            background-color: #27ae60;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            display: none; /* Oculto hasta ganar */
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: pulse 1.5s infinite;
+            box-shadow: 0px 4px #1e8449;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        #btn-loteria.visible { display: block; }
-
-        /* Ajustes para pantallas muy pequeñas */
-        @media (max-width: 360px) {
-            h1 { font-size: 1.4rem; }
-            .tablero { gap: 5px; padding: 8px; }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0px 2px #1e8449;
         }
     </style>
 </head>
 <body>
 
-    <h1>Loteria Napawikami</h1>
+    <h1>Mi Lotería Digital</h1>
     
     <div id="tablero" class="tablero">
-        </div>
+        <!-- Aquí se generan las 16 cartas -->
+    </div>
 
-    <button id="btn-loteria" onclick="cantarLoteria()">¡LOTERÍA!</button>
-
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <div class="controles">
+        <button onclick="generarNuevoTablero()">Generar Nueva Carta</button>
+    </div>
 
     <script>
-        const misCartas = [
-            "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg",
-            "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg", "15.jpg", "16.jpg",
-            "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "23.jpg", "24.jpg",
-            "25.jpg", "26.jpg", "27.jpg", "28.jpg", "29.jpg", "30.jpg"
-        ];
+        /* --- LÓGICA (JAVASCRIPT) --- */
 
-        const contenedor = document.getElementById('tablero');
-        const rutaCarpeta = "imagenes/"; 
+        // 1. Definimos cuántas cartas tienes en total
+        const TOTAL_CARTAS_MAZO = 56; 
 
-        // 1. Revolver y seleccionar 16 cartas únicas para este jugador
-        const barajada = [...misCartas].sort(() => Math.random() - 0.5);
-        const seleccion = barajada.slice(0, 16);
+        function generarNuevoTablero() {
+            const contenedor = document.getElementById('tablero');
+            contenedor.innerHTML = ''; // Limpiar el tablero anterior
 
-        // 2. Crear las cartas en el HTML
-        seleccion.forEach(nombreArchivo => {
-            const div = document.createElement('div');
-            div.className = 'carta';
-            div.style.backgroundImage = `url('${rutaCarpeta}${nombreArchivo}')`;
-            
-            // Lógica de marcar carta
-            div.onclick = function() {
-                this.classList.toggle('marcada');
-                revisarSiGano();
-            };
-
-            contenedor.appendChild(div);
-        });
-
-        function revisarSiGano() {
-            const marcadas = document.querySelectorAll('.carta.marcada').length;
-            const boton = document.getElementById('btn-loteria');
-            
-            // Aparece el botón si marcas las 16 (puedes cambiarlo a 4 para probar)
-            if (marcadas >= 16) {
-                boton.classList.add('visible');
-            } else {
-                boton.classList.remove('visible');
+            // 2. Crear una lista de números del 1 al 56
+            let numeros = [];
+            for (let i = 1; i <= TOTAL_CARTAS_MAZO; i++) {
+                numeros.push(i);
             }
+
+            // 3. Barajar los números (Algoritmo Fisher-Yates)
+            // Esto asegura que cada jugador tenga un orden distinto
+            for (let i = numeros.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [numeros[i], numeros[j]] = [numeros[j], numeros[i]];
+            }
+
+            // 4. Tomar los primeros 16 números de la lista ya barajada
+            const seleccionadas = numeros.slice(0, 16);
+
+            // 5. Crear visualmente las cartas en el HTML
+            seleccionadas.forEach(num => {
+                const carta = document.createElement('div');
+                carta.className = 'carta';
+                
+                // Aquí usamos el número para cargar tu imagen
+                // Ajusta '.jpg' si tus fotos son '.png'
+                carta.style.backgroundImage = `url('${num}.jpg')`;
+
+                // Evento para marcar/desmarcar
+                carta.onclick = function() {
+                    this.classList.toggle('marcada');
+                };
+
+                contenedor.appendChild(carta);
+            });
         }
 
-        function cantarLoteria() {
-            // Efecto de confeti
-            confetti({
-                particleCount: 150,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-            alert("¡LOTERÍA! ¡ERES EL GANADOR! 🥳");
-        }
+        // Ejecutar la función nada más abrir la página
+        window.onload = generarNuevoTablero;
     </script>
 </body>
 </html>
-
